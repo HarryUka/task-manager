@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.taskmanager.exception.TaskNotFoundException;
 import com.example.taskmanager.model.Task;
 import com.example.taskmanager.repository.TaskRepository;
 
@@ -33,7 +34,7 @@ public class TaskService {
 
     public Task updateTask(Long id, Task taskDetails) {
         Task task = taskRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Task not found with id: " + id));
+            .orElseThrow(() -> new TaskNotFoundException(id));
         
         task.setTitle(taskDetails.getTitle());
         task.setDescription(taskDetails.getDescription());
