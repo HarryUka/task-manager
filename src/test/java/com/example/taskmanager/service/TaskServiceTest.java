@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import com.example.taskmanager.exception.TaskNotFoundException;
 import com.example.taskmanager.model.Task;
+import com.example.taskmanager.model.TaskStatus;
 import com.example.taskmanager.repository.TaskRepository;
 
 @SpringBootTest
@@ -33,7 +36,7 @@ class TaskServiceTest {
         testTask.setId(1L);
         testTask.setTitle("Test Task");
         testTask.setDescription("Test Description");
-        testTask.setStatus("PENDING");
+        testTask.setStatus(TaskStatus.PENDING);
     }
 
     @Test
@@ -61,7 +64,7 @@ class TaskServiceTest {
     void updateTask_WhenTaskExists_ShouldReturnUpdatedTask() {
         Task updatedTask = new Task();
         updatedTask.setTitle("Updated Task");
-        updatedTask.setStatus("COMPLETED");
+        updatedTask.setStatus(TaskStatus.COMPLETED);
 
         when(taskRepository.findById(1L)).thenReturn(Optional.of(testTask));
         when(taskRepository.save(any(Task.class))).thenReturn(updatedTask);
@@ -70,7 +73,7 @@ class TaskServiceTest {
 
         assertNotNull(result);
         assertEquals("Updated Task", result.getTitle());
-        assertEquals("COMPLETED", result.getStatus());
+        assertEquals(TaskStatus.COMPLETED, result.getStatus());
     }
 
     @Test
@@ -80,5 +83,22 @@ class TaskServiceTest {
         assertThrows(TaskNotFoundException.class, () -> {
             taskService.updateTask(1L, new Task());
         });
+    }
+
+    @Test
+    void getAllTasks_ShouldReturnListOfTasks() {
+        when(taskRepository.findAll()).thenReturn(Arrays.asList(testTask));
+        
+        List<Task> tasks = taskService.getAllTasks();
+        
+        assertFalse(tasks.isEmpty());
+        assertEquals(1, tasks.size());
+        assertEquals("Test Task", tasks.get(0).getTitle());
+    }
+
+    @Test
+    void deleteTask_ShouldCallRepositoryDelete() {
+        taskService.deleteTask(1L);
+        verify(taskRepository).deleteById(1L);
     }
 } 
